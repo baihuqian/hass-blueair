@@ -76,54 +76,54 @@ class BlueairDataUpdateCoordinator(DataUpdateCoordinator):
             return self.id
 
     @property
-    def pm25(self) -> float:
+    def pm25(self) -> float | None:
         """Return the current pm2.5."""
         if "pm2_5" not in self._datapoint:
             return None
         return self._datapoint["pm2_5"]
     
     @property
-    def filter_usage(self) -> int:
+    def filter_usage(self) -> int | None:
         if "filterusage" not in self._attribute:
             return None
         return int(self._attribute["filterusage"])
 
     @property
-    def brightness(self) -> int:
+    def brightness(self) -> int | None:
         if "brightness" not in self._attribute:
             return None
         return int(self._attribute["brightness"])
     
     @property
-    def fan_speed(self) -> int:
+    def fan_speed(self) -> int | None:
         """Return the current fan speed."""
         if "fanspeed" not in self._attribute:
             return None
         return int(self._attribute["fanspeed"])
 
     @property
-    def is_on(self) -> bool():
+    def is_on(self) -> bool | None:
         """Return the current fan state."""
         if "standby" not in self._attribute:
             return None
         return not self._attribute["standby"]
 
     @property
-    def night_mode(self) -> bool:
+    def night_mode(self) -> bool | None:
         """Return the current fan mode"""
         if "nightmode" not in self._attribute:
             return None
         return self._attribute["nightmode"]
 
     @property
-    def child_lock(self) -> bool:
+    def child_lock(self) -> bool | None:
         """Return the current fan mode"""
         if "childlock" not in self._attribute:
             return None
         return self._attribute["childlock"]
 
     @property
-    def auto_mode(self) -> bool:
+    def auto_mode(self) -> bool | None:
         """Return the current fan mode"""
         if "automode" not in self._attribute:
             return None
