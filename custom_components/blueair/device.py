@@ -7,7 +7,7 @@ from async_timeout import timeout
 
 from . import blueair
 
-API = blueair.BlueAir
+API = blueair.BlueAirAws
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -55,7 +55,7 @@ class BlueairDataUpdateCoordinator(DataUpdateCoordinator):
     @property
     def device_name(self) -> str:
         """Return device name."""
-        return self._device_information.get("nickname", f"{self.name}")
+        return self._device_information.get("name", f"{self.name}")
 
     @property
     def manufacturer(self) -> str:
@@ -65,132 +65,127 @@ class BlueairDataUpdateCoordinator(DataUpdateCoordinator):
     @property
     def model(self) -> str:
         """Return model for device, or the UUID if it's not known."""
-        return self._device_information.get("compatibility", self.id)
-
-    @property
-    def temperature(self) -> float:
-        """Return the current temperature in degrees C."""
-        if "temperature" not in self._datapoint:
-            return None
-        return self._datapoint["temperature"]
-
-    @property
-    def humidity(self) -> float:
-        """Return the current relative humidity percentage."""
-        if "humidity" not in self._datapoint:
-            return None
-        return self._datapoint["humidity"]
-
-    @property
-    def co2(self) -> float:
-        """Return the current co2."""
-        if "co2" not in self._datapoint:
-            return None
-        return self._datapoint["co2"]
-
-    @property
-    def voc(self) -> float:
-        """Return the current voc."""
-        if "voc" not in self._datapoint:
-            return None
-        return self._datapoint["voc"]
-
-    @property
-    def pm1(self) -> float:
-        """Return the current pm1."""
-        if "pm1" not in self._datapoint:
-            return None
-        return self._datapoint["pm1"]
-
-    @property
-    def pm10(self) -> float:
-        """Return the current pm10."""
-        if "pm10" not in self._datapoint:
-            return None
-        return self._datapoint["pm10"]
+        if 'hw' in self._device_information:
+            hw = self._device_information['hw']
+            match hw:
+                case "nb_m_1.0":
+                    return "Blue Pure 311i Max"
+                case _:
+                    return "BlueAir Wi-Fi Enabled Purifier"
+        else: 
+            return self.id
 
     @property
     def pm25(self) -> float:
-        """Return the current pm25."""
-        if "pm25" not in self._datapoint:
+        """Return the current pm2.5."""
+        if "pm2_5" not in self._datapoint:
             return None
-        return self._datapoint["pm25"]
+        return self._datapoint["pm2_5"]
+    
+    @property
+    def filter_usage(self) -> int:
+        if "filterusage" not in self._attribute:
+            return None
+        return int(self._attribute["filterusage"])
 
     @property
-    def all_pollution(self) -> float:
-        """Return all pollution"""
-        if "all_pollution" not in self._datapoint:
+    def brightness(self) -> int:
+        if "brightness" not in self._attribute:
             return None
-        return self._datapoint["all_pollution"]
-
+        return int(self._attribute["brightness"])
+    
     @property
     def fan_speed(self) -> int:
         """Return the current fan speed."""
-        if "fan_speed" not in self._attribute:
+        if "fanspeed" not in self._attribute:
             return None
-        return int(self._attribute["fan_speed"])
+        return int(self._attribute["fanspeed"])
 
     @property
     def is_on(self) -> bool():
         """Return the current fan state."""
-        if "fan_speed" not in self._attribute:
+        if "standby" not in self._attribute:
             return None
-        if self._attribute["fan_speed"] == "0":
-            return False
-        return True
+        return not self._attribute["standby"]
 
     @property
-    def fan_mode(self) -> str:
+    def night_mode(self) -> bool:
         """Return the current fan mode"""
-        if self._attribute["mode"] == "manual":
+        if "nightmode" not in self._attribute:
             return None
-        return self._attribute["mode"]
+        return self._attribute["nightmode"]
 
     @property
-    def fan_mode_supported(self) -> bool():
-        """Return if fan mode is supported. This function is used to lock out unsupported
-         functionality from the UI if the model doesnt support modes"""
-        if "mode" in self._attribute:
-            return True
-        return False
+    def child_lock(self) -> bool:
+        """Return the current fan mode"""
+        if "childlock" not in self._attribute:
+            return None
+        return self._attribute["childlock"]
 
     @property
-    def filter_status(self) -> str:
-        """Return the current filter status."""
-        if "filter_status" not in self._attribute:
+    def auto_mode(self) -> bool:
+        """Return the current fan mode"""
+        if "automode" not in self._attribute:
             return None
-        return self._attribute["filter_status"]
+        return self._attribute["automode"]
 
     async def set_fan_speed(self, new_speed) -> None:
         await self.hass.async_add_executor_job(
-            lambda: self.api_client.set_fan_speed(self.id, new_speed)
+            lambda: self.api_client.send_command(self._uuid, 'fanspeed', new_speed)
         )
         self._attribute["fan_speed"] = new_speed
         await self.async_refresh()
 
-    async def set_fan_mode(self, new_mode) -> None:
+    async def set_brightness(self, new_brightness) -> None:
         await self.hass.async_add_executor_job(
-            lambda: self.api_client.set_fan_mode(self.id, new_mode)
+            lambda: self.api_client.send_command(self._uuid, 'brightness', new_brightness)
         )
-        self._attribute["mode"] = new_mode
+        self._attribute["brightness"] = new_brightness
+        await self.async_refresh()
+
+    async def set_auto_mode(self, new_auto_mode: bool) -> None:
+        await self.hass.async_add_executor_job(
+            lambda: self.api_client.send_command(self._uuid, 'automode', new_auto_mode)
+        )
+        self._attribute["automode"] = new_auto_mode
+        await self.async_refresh()
+
+    async def set_night_mode(self, new_night_mode: bool) -> None:
+        await self.hass.async_add_executor_job(
+            lambda: self.api_client.send_command(self._uuid, 'nightmode', new_night_mode)
+        )
+        self._attribute["nightmode"] = new_night_mode
+        await self.async_refresh()
+
+    async def set_child_lock(self, new_child_lock: bool) -> None:
+        await self.hass.async_add_executor_job(
+            lambda: self.api_client.send_command(self._uuid, 'childlock', new_child_lock)
+        )
+        self._attribute["childlock"] = new_child_lock
+        await self.async_refresh()
+    
+    async def set_on(self, on: bool) -> None:
+        standby = not on
+        await self.hass.async_add_executor_job(
+            lambda: self.api_client.send_command(self._uuid, 'standby', standby)
+        )
+        self._attribute["standby"] = standby
         await self.async_refresh()
 
     async def _update_device(self, *_) -> None:
         """Update the device information from the API."""
         LOGGER.info(self._name)
-        self._device_information = await self.hass.async_add_executor_job(
-            lambda: self.api_client.get_info(self._uuid)
+
+        info = await self.hass.async_add_executor_job(
+            lambda: self.api_client.get_info(self._name, self._uuid)
         )
+        LOGGER.info(f"_device_info: {info}")
+
+        self._device_information = info['configuration']['di']
         LOGGER.info(f"_device_information: {self._device_information}")
-        try:
-            # Classics will not have the expected data here
-            self._datapoint = await self.hass.async_add_executor_job(
-                lambda: self.api_client.get_current_data_point(self._uuid)
-            )
-        except Exception:
-            pass
+        
+        self._datapoint = {sd['n']: sd['v'] for sd in info['sensorData']}
         LOGGER.info(f"_datapoint: {self._datapoint}")
-        self._attribute = await self.hass.async_add_executor_job(
-            lambda: self.api_client.get_attributes(self._uuid)
-        )
+
+        self._attribute = {state['n']: state['v'] for state in info['states']}
         LOGGER.info(f"_attribute: {self._attribute}")

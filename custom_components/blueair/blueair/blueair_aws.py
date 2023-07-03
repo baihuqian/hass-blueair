@@ -163,25 +163,22 @@ class BlueAirAws(object):
                     ],
                 },
             }
-        ).json()['deviceInfo']
+        ).json()['deviceInfo'][0]
     
 
-    def send_command(self, decvice_uuid: str, service: str, action_verb: str, action_value: any):
+    def send_command(self, decvice_uuid: str, service: str, action_value: any):
         self.renew_token_if_expired()
-        
-        if action_verb == 'vb':
-            body = {
-                'n': service,
-                'vb': action_value,
-            }
+
+        if type(action_value) == bool:
+            value_key = 'vb'
         else:
-            body = {
-                'n': service,
-                'v': action_value,
-            }
+            value_key = 'v'
 
         return requests.post(
             url = f"{self.api_url_prefix}/prod/c/{decvice_uuid}/a/{service}",
             headers= self.api_header() | {'Content-Type': 'application/json'},
-            json = body
+            json = {
+                'n': service,
+                value_key: action_value,
+            }
         ).json()
