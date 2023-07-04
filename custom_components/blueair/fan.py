@@ -2,15 +2,6 @@
 from homeassistant.components.fan import (
     FanEntity,
     SUPPORT_SET_SPEED,
-    SUPPORT_PRESET_MODE,
-)
-from homeassistant.util.percentage import (
-    int_states_in_range,
-    ranged_value_to_percentage,
-    percentage_to_ranged_value,
-)
-from homeassistant.const import (
-    PERCENTAGE,
 )
 
 from typing import Any, Optional

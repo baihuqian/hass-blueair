@@ -51,7 +51,7 @@ class BlueairFilterExpiredSensor(BlueairEntity, BinarySensorEntity):
 class BlueairChildLockSensor(BlueairEntity, BinarySensorEntity):
 
     def __init__(self, name, device):
-        super().__init__("child_Lock", name, device)
+        super().__init__("child_lock", name, device)
         self._state: bool = None
         self._attr_icon = "mdi:account-child-outline"
 

@@ -77,19 +77,21 @@ class BlueairDataUpdateCoordinator(DataUpdateCoordinator):
 
     @property
     def pm25(self) -> float | None:
-        """Return the current pm2.5."""
+        """Return the current pm2.5 measurement."""
         if "pm2_5" not in self._datapoint:
             return None
         return self._datapoint["pm2_5"]
     
     @property
     def filter_usage(self) -> int | None:
+        """Return the filter usage."""
         if "filterusage" not in self._attribute:
             return None
         return int(self._attribute["filterusage"])
 
     @property
     def brightness(self) -> int | None:
+        """Return the current brightness."""
         if "brightness" not in self._attribute:
             return None
         return int(self._attribute["brightness"])
@@ -103,32 +105,39 @@ class BlueairDataUpdateCoordinator(DataUpdateCoordinator):
 
     @property
     def is_on(self) -> bool | None:
-        """Return the current fan state."""
+        """Return True if the device is on."""
         if "standby" not in self._attribute:
             return None
         return not self._attribute["standby"]
 
     @property
     def night_mode(self) -> bool | None:
-        """Return the current fan mode"""
+        """Return True if night mode is on."""
         if "nightmode" not in self._attribute:
             return None
         return self._attribute["nightmode"]
 
     @property
     def child_lock(self) -> bool | None:
-        """Return the current fan mode"""
+        """Return True if child lock is on."""
         if "childlock" not in self._attribute:
             return None
         return self._attribute["childlock"]
 
     @property
     def auto_mode(self) -> bool | None:
-        """Return the current fan mode"""
+        """Return True if the fan is in auto mode."""
         if "automode" not in self._attribute:
             return None
         return self._attribute["automode"]
 
+    @property
+    def wifi_working(self) -> bool | None:
+        """Return True if device is online."""
+        if "online" not in self._attribute:
+            return None
+        return self._attribute["online"]
+    
     async def set_fan_speed(self, new_speed) -> None:
         await self.hass.async_add_executor_job(
             lambda: self.api_client.send_command(self._uuid, 'fanspeed', new_speed)
