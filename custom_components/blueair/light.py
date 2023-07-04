@@ -39,12 +39,18 @@ class BlueairLightEntity(BlueairEntity, LightEntity):
     @property
     def brightness(self) -> int | None:
         """Return the brightness of this light between 0..255."""
-        return round(self._device.brightness / 100 * 255.0, 0)
+        if self._device.brightness is None:
+            return None
+        else:
+            return round(self._device.brightness / 100 * 255.0, 0)
 
     @property
     def is_on(self) -> bool:
         """Return True if the entity is on."""
-        return self._device.brightness != 0
+        if self._device.brightness is None:
+            return False
+        else:
+            return self._device.brightness != 0
 
     async def async_turn_on(self, **kwargs):
         if ATTR_BRIGHTNESS in kwargs:

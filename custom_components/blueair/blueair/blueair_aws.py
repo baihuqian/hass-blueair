@@ -10,7 +10,7 @@ import time
 
 logger = logging.getLogger(__name__)
 
-BLUEAIR_TOKEN_EXPIRATION_SECONDS = 86400
+# BLUEAIR_TOKEN_EXPIRATION_SECONDS = 86400
 
 BLUEAIR_AWS_APIKEYS = {
   'us': {
@@ -113,7 +113,7 @@ class BlueAirAws(object):
         logger.debug(f"AWS Login response: {response}")
 
         self.access_token = response['access_token']
-        self.token_expiration_time = time.time() + BLUEAIR_TOKEN_EXPIRATION_SECONDS
+        self.token_expiration_time = time.time() + int(response['expires_in'])
 
     def api_header(self) -> Dict[str, str]:
         return {
@@ -132,7 +132,7 @@ class BlueAirAws(object):
         return requests.get(
             url = f"{self.api_url_prefix}/prod/c/registered-devices",
             headers = self.api_header()
-        ).json()
+        ).json()['devices']
     
 
     def get_info(self, device_name: str, device_uuid: str) -> Dict[str, Any]:

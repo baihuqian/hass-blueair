@@ -51,17 +51,7 @@ class BlueairFan(BlueairEntity, FanEntity):
             return int(self._device.fan_speed)
         else:
             return 0
-    
-    @property
-    def preset_mode(self) -> Optional[str]:
-        if self._device.fan_mode_supported:
-            return self._device.fan_mode
 
-    @property
-    def preset_modes(self) -> Optional[list]:
-        if self._device.fan_mode_supported:
-            return list([str("auto")])
-        
     async def async_set_percentage(self, percentage: int) -> None:
         """Sets fan speed percentage."""
         await self._device.set_fan_speed(percentage)

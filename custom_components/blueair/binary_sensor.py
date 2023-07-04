@@ -45,7 +45,10 @@ class BlueairFilterExpiredSensor(BlueairEntity, BinarySensorEntity):
     @property
     def is_on(self) -> bool | None:
         """Return the current filter_status."""
-        return self._device.filter_expired
+        if self._device.filter_usage is None:
+            return None
+        else:
+            return self._device.filter_usage >= 90
 
 
 class BlueairChildLockSensor(BlueairEntity, BinarySensorEntity):

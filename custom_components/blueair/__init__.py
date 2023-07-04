@@ -15,7 +15,7 @@ from .device import BlueairDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["sensor", "fan"]
+PLATFORMS = ["sensor", "fan", "light", "binary_sensor"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -26,8 +26,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     try:
         client = await hass.async_add_executor_job(
-            lambda: blueair.BlueAir(
-                username=entry.data[CONF_USERNAME], password=entry.data[CONF_PASSWORD]
+            lambda: blueair.BlueAirAws(
+                username=entry.data[CONF_USERNAME],
+                password=entry.data[CONF_PASSWORD],
+                region='us'
             )
         )
         hass.data[DOMAIN][entry.entry_id][CLIENT] = client

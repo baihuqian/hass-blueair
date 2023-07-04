@@ -42,9 +42,9 @@ class BlueairPM25Sensor(BlueairEntity, SensorEntity):
     @property
     def native_value(self) -> float:
         """Return the current pm25."""
-        if self._device.pm2_5 is None:
+        if self._device.pm25 is None:
             return None
-        return round(self._device.pm2_5, 0)
+        return round(self._device.pm25, 0)
 
 class BlueairFilterUsageSensor(BlueairEntity, SensorEntity):
     """Monitors the status of the Filter"""

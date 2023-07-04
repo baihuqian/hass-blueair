@@ -76,7 +76,7 @@ class BlueairDataUpdateCoordinator(DataUpdateCoordinator):
             return self.id
 
     @property
-    def pm25(self) -> float | None:
+    def pm25(self) -> int | None:
         """Return the current pm2.5 measurement."""
         if "pm2_5" not in self._datapoint:
             return None
@@ -87,7 +87,7 @@ class BlueairDataUpdateCoordinator(DataUpdateCoordinator):
         """Return the filter usage."""
         if "filterusage" not in self._attribute:
             return None
-        return int(self._attribute["filterusage"])
+        return self._attribute["filterusage"]
 
     @property
     def brightness(self) -> int | None:
@@ -138,14 +138,14 @@ class BlueairDataUpdateCoordinator(DataUpdateCoordinator):
             return None
         return self._attribute["online"]
     
-    async def set_fan_speed(self, new_speed) -> None:
+    async def set_fan_speed(self, new_speed: int) -> None:
         await self.hass.async_add_executor_job(
             lambda: self.api_client.send_command(self._uuid, 'fanspeed', new_speed)
         )
         self._attribute["fan_speed"] = new_speed
         await self.async_refresh()
 
-    async def set_brightness(self, new_brightness) -> None:
+    async def set_brightness(self, new_brightness: int) -> None:
         await self.hass.async_add_executor_job(
             lambda: self.api_client.send_command(self._uuid, 'brightness', new_brightness)
         )
@@ -160,6 +160,7 @@ class BlueairDataUpdateCoordinator(DataUpdateCoordinator):
         await self.async_refresh()
 
     async def set_night_mode(self, new_night_mode: bool) -> None:
+        """Turn on the night mode."""
         await self.hass.async_add_executor_job(
             lambda: self.api_client.send_command(self._uuid, 'nightmode', new_night_mode)
         )
@@ -167,6 +168,7 @@ class BlueairDataUpdateCoordinator(DataUpdateCoordinator):
         await self.async_refresh()
 
     async def set_child_lock(self, new_child_lock: bool) -> None:
+        """Turn on the child lock."""
         await self.hass.async_add_executor_job(
             lambda: self.api_client.send_command(self._uuid, 'childlock', new_child_lock)
         )
@@ -174,6 +176,7 @@ class BlueairDataUpdateCoordinator(DataUpdateCoordinator):
         await self.async_refresh()
     
     async def set_on(self, on: bool) -> None:
+        """Turn on the device."""
         standby = not on
         await self.hass.async_add_executor_job(
             lambda: self.api_client.send_command(self._uuid, 'standby', standby)
@@ -183,7 +186,7 @@ class BlueairDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def _update_device(self, *_) -> None:
         """Update the device information from the API."""
-        LOGGER.info(self._name)
+        LOGGER.info(f"Calling _update_device for {self._name}")
 
         info = await self.hass.async_add_executor_job(
             lambda: self.api_client.get_info(self._name, self._uuid)
@@ -193,8 +196,8 @@ class BlueairDataUpdateCoordinator(DataUpdateCoordinator):
         self._device_information = info['configuration']['di']
         LOGGER.info(f"_device_information: {self._device_information}")
         
-        self._datapoint = {sd['n']: sd['v'] for sd in info['sensorData']}
+        self._datapoint = {sd['n']: int(sd['v']) for sd in info['sensordata']}
         LOGGER.info(f"_datapoint: {self._datapoint}")
 
-        self._attribute = {state['n']: state['v'] for state in info['states']}
+        self._attribute = {state['n']: (int(state['v']) if 'v' in state else bool(state['vb'])) for state in info['states']}
         LOGGER.info(f"_attribute: {self._attribute}")
