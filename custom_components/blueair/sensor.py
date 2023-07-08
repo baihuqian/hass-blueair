@@ -22,8 +22,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         else:            
             entities.extend(
                 [
-                    BlueairPM25Sensor(f"{device.device_name}_pm25", device),
-                    BlueairFilterUsageSensor(f"{device.device_name}_filter_usage", device),
+                    BlueairPM25Sensor(f"{device.device_name} PM2.5 Sensor", device),
+                    BlueairFilterUsageSensor(f"{device.device_name} Filter Usage", device),
                 ]
             )
     async_add_entities(entities)
@@ -34,7 +34,7 @@ class BlueairPM25Sensor(BlueairEntity, SensorEntity):
     _attr_device_class = DEVICE_CLASS_PM25
     _attr_native_unit_of_measurement = "µg/m³"
 
-    def __init__(self, name, device):
+    def __init__(self, name: str, device: BlueairDataUpdateCoordinator):
         """Initialize the pm25 sensor."""
         super().__init__("pm25", name, device)
         self._state: float = None
@@ -49,7 +49,7 @@ class BlueairPM25Sensor(BlueairEntity, SensorEntity):
 class BlueairFilterUsageSensor(BlueairEntity, SensorEntity):
     """Monitors the status of the Filter"""
 
-    def __init__(self, name, device):
+    def __init__(self, name: str, device: BlueairDataUpdateCoordinator):
         """Initialize the filter_status sensor."""
         super().__init__("filter_usage", name, device)
         self._state: str = None

@@ -5,12 +5,8 @@ import logging
 from typing import Any, Dict, List
 import requests
 import time
-# from urllib.parse import urlencode
-
 
 logger = logging.getLogger(__name__)
-
-# BLUEAIR_TOKEN_EXPIRATION_SECONDS = 86400
 
 BLUEAIR_AWS_APIKEYS = {
   'us': {
@@ -48,15 +44,15 @@ class BlueAirAws(object):
 
         self.token_expiration_time = 0
 
-        self.login()
+        self._login()
     
 
-    def renew_token_if_expired(self) -> None:
-        if time.time() > self.token_expiration_time:
-            self.login
+    def _renew_token_if_expired(self) -> None:
+        if round(time.time()) > self.token_expiration_time:
+            self._login()
 
-    def login(self) -> None:
-
+    def _login(self) -> None:
+        """Acquire session credentials to call BlueAir APIs."""
         gigya_headers = {
             'Host': f'accounts.{self.gigya_region}.gigya.com',
             'User-Agent': 'Blueair/58 CFNetwork/1327.0.4 Darwin/21.2.0',
@@ -113,10 +109,9 @@ class BlueAirAws(object):
         logger.debug(f"AWS Login response: {response}")
 
         self.access_token = response['access_token']
-        self.token_expiration_time = time.time() + int(response['expires_in'])
+        self.token_expiration_time = round(time.time()) + int(response['expires_in'])
 
-    def api_header(self) -> Dict[str, str]:
-        return {
+        self.api_header = {
             'Host': self.api_dns_name,
             'Connection': 'keep-alive',
             'idtoken': self.access_token,
@@ -127,20 +122,22 @@ class BlueAirAws(object):
         }
 
     def get_devices(self) -> List[Dict[str, Any]]:
-        self.renew_token_if_expired()
+        """Get the list of devices registered in this account."""
+        self._renew_token_if_expired()
 
         return requests.get(
             url = f"{self.api_url_prefix}/prod/c/registered-devices",
-            headers = self.api_header()
+            headers = self.api_header
         ).json()['devices']
     
 
     def get_info(self, device_name: str, device_uuid: str) -> Dict[str, Any]:
-        self.renew_token_if_expired()
+        """Get the detailed information about a given device."""
+        self._renew_token_if_expired()
         
         return requests.post(
             url = f"{self.api_url_prefix}/prod/c/{device_name}/r/initial",
-            headers= self.api_header() | {'Content-Type': 'application/json'},
+            headers= self.api_header | {'Content-Type': 'application/json'},
             json = {
                 'deviceconfigquery': [
                     {
@@ -166,8 +163,9 @@ class BlueAirAws(object):
         ).json()['deviceInfo'][0]
     
 
-    def send_command(self, decvice_uuid: str, service: str, action_value: any):
-        self.renew_token_if_expired()
+    def send_command(self, decvice_uuid: str, service: str, action_value: bool | int):
+        """Send command to a given device."""
+        self._renew_token_if_expired()
 
         if type(action_value) == bool:
             value_key = 'vb'
@@ -176,7 +174,7 @@ class BlueAirAws(object):
 
         return requests.post(
             url = f"{self.api_url_prefix}/prod/c/{decvice_uuid}/a/{service}",
-            headers= self.api_header() | {'Content-Type': 'application/json'},
+            headers= self.api_header | {'Content-Type': 'application/json'},
             json = {
                 'n': service,
                 value_key: action_value,

@@ -15,7 +15,7 @@ from .device import BlueairDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["sensor", "fan", "light", "binary_sensor"]
+PLATFORMS = ["sensor", "fan", "light", "binary_sensor", "switch"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

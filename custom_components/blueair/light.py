@@ -23,7 +23,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         else:
             entities.extend(
                 [
-                    BlueairLightEntity(f"{device.device_name}_light", device),
+                    BlueairLightEntity(f"{device.device_name} LED", device),
                 ]
             )
     async_add_entities(entities)
@@ -33,7 +33,7 @@ class BlueairLightEntity(BlueairEntity, LightEntity):
     _attr_color_mode = ColorMode.BRIGHTNESS
     _attr_supported_color_modes = {ColorMode.BRIGHTNESS}
 
-    def __init__(self, name, device):
+    def __init__(self, name: str, device: BlueairDataUpdateCoordinator):
         super().__init__("LED Light", name, device)
 
     @property

@@ -1,7 +1,6 @@
 """Base entity class for Blueair entities."""
 from typing import Any
 
-from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.helpers.entity import DeviceInfo, Entity
 
 from .const import DOMAIN

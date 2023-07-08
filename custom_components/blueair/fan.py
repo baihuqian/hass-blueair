@@ -21,7 +21,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         if device.model != 'foobot':
             entities.extend(
                 [
-                    BlueairFan(f"{device.device_name}_fan", device),
+                    BlueairFan(f"{device.device_name} Fan", device),
                 ]
             )
     async_add_entities(entities)
@@ -30,7 +30,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class BlueairFan(BlueairEntity, FanEntity):
     """Controls Fan."""
 
-    def __init__(self, name, device):
+    def __init__(self, name: str, device: BlueairDataUpdateCoordinator):
         """Initialize the temperature sensor."""
         super().__init__("Fan", name, device)
         self._state: float = None

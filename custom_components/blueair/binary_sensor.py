@@ -24,9 +24,9 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         else:
             entities.extend(
                 [
-                    BlueairFilterExpiredSensor(f"{device.device_name}_filter_expired", device),
-                    BlueairChildLockSensor(f"{device.device_name}_child_lock", device),
-                    BlueairOnlineSensor(f"{device.device_name}_online", device),
+                    BlueairFilterExpiredSensor(f"{device.device_name} Filter Expired", device),
+                    BlueairChildLockSensor(f"{device.device_name} Child Lock", device),
+                    BlueairOnlineSensor(f"{device.device_name} Online", device),
                 ]
             )
     async_add_entities(entities)
@@ -35,7 +35,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class BlueairFilterExpiredSensor(BlueairEntity, BinarySensorEntity):
     """Monitors the status of the Filter"""
 
-    def __init__(self, name, device):
+    def __init__(self, name: str, device: BlueairDataUpdateCoordinator):
         """Initialize the filter_status sensor."""
         super().__init__("filter_expired", name, device)
         self._state: bool = None
