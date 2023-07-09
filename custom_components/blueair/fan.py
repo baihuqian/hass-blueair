@@ -57,7 +57,7 @@ class BlueairFan(BlueairEntity, FanEntity):
         await self._device.set_fan_speed(percentage)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
-        await self._device.set_fan_speed(0)
+        await self._device.set_on(False)
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         await self._device.set_fan_speed(11)

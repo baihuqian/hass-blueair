@@ -22,6 +22,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                 [
                     BlueAirChildLockSwitch(f"{device.device_name} Child Lock", device),
                     BlueAirNightModeSwitch(f"{device.device_name} Night Mode", device),
+                    BlueAirAutoModeSwitch(f"{device.device_name} Auto Mode", device),
                     BlueAirPowerSwitch(f"{device.device_name} Power", device),
                 ]
             )
@@ -43,7 +44,7 @@ class BlueAirChildLockSwitch(BlueairEntity, SwitchEntity):
         """Turn the switch on."""
         await self._device.set_child_lock(True)
 
-    async def turn_off(self, **kwargs):
+    async def async_turn_off(self, **kwargs):
         """Turn the switch off."""
         await self._device.set_child_lock(False)
 
@@ -62,9 +63,28 @@ class BlueAirNightModeSwitch(BlueairEntity, SwitchEntity):
         """Turn the switch on."""
         await self._device.set_night_mode(True)
 
-    async def turn_off(self, **kwargs):
+    async def async_turn_off(self, **kwargs):
         """Turn the switch off."""
         await self._device.set_night_mode(False)
+
+class BlueAirAutoModeSwitch(BlueairEntity, SwitchEntity):
+    _attr_has_entity_name = True
+
+    def __init__(self, name: str, device: BlueairDataUpdateCoordinator):
+        super().__init__("auto_mode", name, device)
+
+    @property
+    def is_on(self):
+        """If the switch is currently on or off."""
+        return self._device.auto_mode
+
+    async def async_turn_on(self, **kwargs):
+        """Turn the switch on."""
+        await self._device.set_auto_mode(True)
+
+    async def async_turn_off(self, **kwargs):
+        """Turn the switch off."""
+        await self._device.set_auto_mode(False)
 
 class BlueAirPowerSwitch(BlueairEntity, SwitchEntity):
     _attr_has_entity_name = True
@@ -81,6 +101,6 @@ class BlueAirPowerSwitch(BlueairEntity, SwitchEntity):
         """Turn the switch on."""
         await self._device.set_on(True)
 
-    async def turn_off(self, **kwargs):
+    async def async_turn_off(self, **kwargs):
         """Turn the switch off."""
         await self._device.set_on(False)
